@@ -1,0 +1,45 @@
+﻿<UserControl
+    x:Class="App1.Control.ScannerTest"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App1.Control"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+    <UserControl.Resources>
+        <DataTemplate x:Key="ComboBoxItemTemplate">
+            <TextBlock Margin="0,0,10,0" Text="{Binding Name}" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.4*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Background="DimGray">
+            <ListView Name="ScannerName" Margin="0 20" 
+                      HorizontalAlignment="Center" Width="auto" Height="60"
+                      ItemClick="ScannerName_ItemClick"
+                        ItemTemplate="{StaticResource ComboBoxItemTemplate}">
+            </ListView>
+            <DropDownButton Name="Setting" Width="80" HorizontalAlignment="Center">
+                
+            </DropDownButton>
+            <DropDownButton Name="FileType" Margin="0 20" HorizontalAlignment="Center" Width="80"
+                            >
+                
+            </DropDownButton>
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <Button Content="刷新" Click="Button_Click"/>
+            <Button Content="预览" HorizontalAlignment="Center" Margin="5 20" Click="Button_Click_1"/>
+            </StackPanel>
+            
+        </StackPanel>
+        <Grid Background="DarkGray"  Grid.Column="1">
+            <Image x:Name="Priew"/>
+        </Grid>
+    </Grid>
+</UserControl>
