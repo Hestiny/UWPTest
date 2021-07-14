@@ -10,7 +10,7 @@
     d:DesignWidth="400">
     <UserControl.Resources>
         <DataTemplate x:Key="ComboBoxItemTemplate">
-            <TextBlock Margin="0,0,10,0" Text="{Binding Name}" />
+            <TextBlock Foreground="Black"  Text="{Binding Name}" />
         </DataTemplate>
     </UserControl.Resources>
 
@@ -20,26 +20,45 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Background="DimGray">
-            <ListView Name="ScannerName" Margin="0 20" 
-                      HorizontalAlignment="Center" Width="auto" Height="60"
-                      ItemClick="ScannerName_ItemClick"
+            <ComboBox Name="ScannerName" Margin="0 20" 
+                      HorizontalAlignment="Center" Width="200" 
+                       SelectionChanged="ScannerName_SelectionChanged"
                         ItemTemplate="{StaticResource ComboBoxItemTemplate}">
-            </ListView>
-            <DropDownButton Name="Setting" Width="80" HorizontalAlignment="Center">
-                
-            </DropDownButton>
-            <DropDownButton Name="FileType" Margin="0 20" HorizontalAlignment="Center" Width="80"
+            </ComboBox>
+            <ComboBox SelectedIndex="{x:Bind ImageColorMode,Mode=TwoWay}" HorizontalAlignment="Center">
+                <ComboBoxItem Content="彩色"/>
+                <ComboBoxItem Content="黑白"/>
+                <ComboBoxItem Content="单色"/>
+                <ComboBoxItem  Content="自动"/>
+            </ComboBox>
+            <ComboBox Name="Setting" Width="100" SelectedIndex="{x:Bind ImageScanSoure,Mode=TwoWay}" Margin="0 20 0 0" HorizontalAlignment="Center" >
+                <ComboBoxItem Content="默认"/>
+                <ComboBoxItem Content="平板"/>
+                <ComboBoxItem Content="传纸盒"/>
+                <ComboBoxItem Content="自动配置" />
+            </ComboBox>
+            <ComboBox Name="FileType" Margin="0 20" HorizontalAlignment="Center" Width="100"
                             >
-                
-            </DropDownButton>
+                <ComboBoxItem Content="PNG" IsSelected="True"/>
+                <ComboBoxItem Content="PDF"/>
+            </ComboBox>
+            <Slider x:Name="BrightValueSlide" Value="{x:Bind BrightValue}" Maximum="100"/>
+            <TextBlock x:Name="FilePath" Text="ClickMe" Tapped="TextBlock_Tapped"/>
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <Button Content="刷新" Click="Button_Click"/>
             <Button Content="预览" HorizontalAlignment="Center" Margin="5 20" Click="Button_Click_1"/>
             </StackPanel>
-            
+            <Button Content="扫描" HorizontalAlignment="Center" Click="Button_Click_2"/>
+
         </StackPanel>
         <Grid Background="DarkGray"  Grid.Column="1">
-            <Image x:Name="Priew"/>
-        </Grid>
+            <Grid x:Name="ImageBack" Visibility="Collapsed" Background="Black">
+                <Image x:Name="Priew" PointerPressed="Priew_PointerPressed" PointerReleased="Priew_PointerReleased"/>
+                <Rectangle x:Name="LT" Fill="Red" Height="4" Width="4" Margin="-2 -2 0 0" 
+                           HorizontalAlignment="Left" VerticalAlignment="Top" ManipulationMode="All" 
+                           ManipulationStarted="TestRect_ManipulationStarted"  
+                           ManipulationDelta="Rectangle_ManipulationDelta"/>
+            </Grid>
+          </Grid>
     </Grid>
 </UserControl>
