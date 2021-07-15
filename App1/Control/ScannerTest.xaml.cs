@@ -252,17 +252,25 @@ namespace App1.Control
                 });
             };
             dialog.ShowAsync();
-
-            SelectedScanRegion = new Rect(Border.Margin.Left * wRate, Border.Margin.Top * hRate, Border.Width * wRate, Border.Height * hRate);
-            ImageScannerResolution imageScannerResolution = new ImageScannerResolution();
-            imageScannerResolution.DpiX = 300;
-            imageScannerResolution.DpiY = 300;
-            myScanner.FlatbedConfiguration.DesiredResolution = imageScannerResolution;//不得超过自动获取的值大小,否则会参数错误
-            myScanner.FlatbedConfiguration.SelectedScanRegion = SelectedScanRegion;//xy为起点,w.h为大小,和不能超过最大面积,并且不能小于最小面积
-            if (myScanner.FlatbedConfiguration.IsFormatSupported(ImageScannerFormat))//跟设备有关系,本设备不支持输出pdf
+            try
             {
-                myScanner.FlatbedConfiguration.Format = ImageScannerFormat;
+                SelectedScanRegion = new Rect(Border.Margin.Left * wRate, Border.Margin.Top * hRate, Border.Width * wRate, Border.Height * hRate);
+                ImageScannerResolution imageScannerResolution = new ImageScannerResolution();
+                imageScannerResolution.DpiX = 300;
+                imageScannerResolution.DpiY = 300;
+                myScanner.FlatbedConfiguration.DesiredResolution = imageScannerResolution;//不得超过自动获取的值大小,否则会参数错误
+                myScanner.FlatbedConfiguration.SelectedScanRegion = SelectedScanRegion;//xy为起点,w.h为大小,和不能超过最大面积,并且不能小于最小面积
+                if (myScanner.FlatbedConfiguration.IsFormatSupported(ImageScannerFormat))//跟设备有关系,本设备不支持输出pdf
+                {
+                    myScanner.FlatbedConfiguration.Format = ImageScannerFormat;
+                }
             }
+            catch
+            {
+                dialog.Hide();
+                return;
+            }
+           
             await myScanner.ScanFilesToFolderAsync(ImageScannerScanSource.Flatbed, storageFolder).AsTask(cancellationToken.Token);//返回扫描进度
             dialog.Hide();
         }
@@ -419,31 +427,6 @@ namespace App1.Control
                 MoveLT_Y(y, e);
             }
             UpdateBorder();
-        }
-
-        /// <summary>
-        /// 判断当前rect是否可以X轴移动
-        /// </summary>
-        /// <param name="translateTransform"></param>
-        /// <param name="e"></param>
-        private bool IsCanMove_X(TranslateTransform translateTransform, TranslateTransform x, ManipulationDeltaRoutedEventArgs e)
-        {
-            //不能超过同侧按钮
-            if (Math.Abs(translateTransform.X + e.Delta.Translation.X / Scrol.ZoomFactor-x.X) >= MinWidth && translateTransform.X + e.Delta.Translation.X / Scrol.ZoomFactor <= ImageBack.Width)
-                return true;
-            return false;
-        }
-
-        /// <summary>
-        /// 判断当前rect是否可以Y轴移动
-        /// </summary>
-        /// <param name="translateTransform"></param>
-        /// <param name="e"></param>
-        private bool IsCanMove_Y(TranslateTransform translateTransform, ManipulationDeltaRoutedEventArgs e)
-        {
-            if ((translateTransform.Y + e.Delta.Translation.Y / Scrol.ZoomFactor) >= MinHeight && translateTransform.Y + e.Delta.Translation.Y / Scrol.ZoomFactor <= ImageBack.Height)
-                return true;
-            return false;
         }
 
         /// <summary>
