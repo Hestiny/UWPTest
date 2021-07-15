@@ -52,13 +52,32 @@
 
         </StackPanel>
         <Grid Background="DarkGray"  Grid.Column="1">
-            <Grid x:Name="ImageBack" Visibility="Collapsed" Background="Black">
-                <Image x:Name="Priew" PointerPressed="Priew_PointerPressed" PointerReleased="Priew_PointerReleased"/>
-                <Rectangle x:Name="LT" Fill="Red" Height="4" Width="4" Margin="-2 -2 0 0" 
-                           HorizontalAlignment="Left" VerticalAlignment="Top" ManipulationMode="All" 
+            <ScrollViewer x:Name="Scrol"  ZoomMode="Enabled" HorizontalScrollBarVisibility="Visible">
+                <Grid x:Name="ImageBack" Visibility="Collapsed" Background="Red" >
+                    <Image x:Name="Priew" PointerPressed="Priew_PointerPressed" PointerReleased="Priew_PointerReleased"/>
+                    <Rectangle x:Name="LT" Tag="LT" Fill="Red" Height="10" Width="10" VerticalAlignment="Top" HorizontalAlignment="Left"
+                            ManipulationMode="All" 
                            ManipulationStarted="TestRect_ManipulationStarted"  
                            ManipulationDelta="Rectangle_ManipulationDelta"/>
-            </Grid>
-          </Grid>
+                    <Rectangle x:Name="RT" Tag="RT" Fill="Red" Height="10" Width="10" VerticalAlignment="Top" HorizontalAlignment="Right"
+                            ManipulationMode="All" 
+                           ManipulationStarted="TestRect_ManipulationStarted"  
+                           ManipulationDelta="Rectangle_ManipulationDelta"/>
+                    <Rectangle x:Name="LB" Tag="LB" Fill="Red" Height="10" Width="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                            ManipulationMode="All" 
+                           ManipulationStarted="TestRect_ManipulationStarted"  
+                           ManipulationDelta="Rectangle_ManipulationDelta"/>
+                    <Rectangle x:Name="RB" Tag="RB" Fill="Red" Height="10" Width="10" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                            ManipulationMode="All" 
+                           ManipulationStarted="TestRect_ManipulationStarted"  
+                           ManipulationDelta="Rectangle_ManipulationDelta"/>
+                    <Rectangle x:Name="Border" Stroke="DodgerBlue" StrokeThickness="4" 
+                              
+                               StrokeDashArray="4 2" 
+                               VerticalAlignment="Top" HorizontalAlignment="Left"
+                               />
+                </Grid>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>

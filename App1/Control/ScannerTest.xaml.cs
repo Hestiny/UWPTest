@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI.Input;
+using Windows.UI.Xaml.Shapes;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 
@@ -51,6 +52,25 @@ namespace App1.Control
             set { brightValue = value; }
         }
 
+        private Thickness RectMargin =new Thickness(0,0,0,0);
+
+        private double RectWidth
+        {
+            get { return rectWidth; }
+            set { rectWidth = value; }
+        }
+        private double RectHeight
+        {
+            get { return rectHeight; }
+            set { rectHeight = value; }
+        }
+
+
+        private double wRate;
+        private double hRate;
+        private double rectWidth;
+        private double rectHeight;
+        private float zoomValue = 1;
         private int brightValue=50;
         private DeviceWatcher scannerWatcher;
         private ImageScanner myScanner;
@@ -131,9 +151,14 @@ namespace App1.Control
             var bitmap = new BitmapImage();
             await bitmap.SetSourceAsync(stream);
             Priew.Source = bitmap;
-            //await Task.Delay(20);
-            ImageBack.Width = bitmap.PixelWidth;
-            ImageBack.Height = bitmap.PixelHeight;
+            rectWidth = ImageBack.Width = bitmap.PixelWidth;
+            rectHeight = ImageBack.Height = bitmap.PixelHeight;
+            wRate = myScanner.FlatbedConfiguration.MaxScanArea.Width / ImageBack.Width;
+            hRate = myScanner.FlatbedConfiguration.MaxScanArea.Height / ImageBack.Height;
+           
+            InitRectTransform();
+
+            Scrol.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty , ChangeRectSize);
         }
 
         /// <summary>
@@ -227,11 +252,11 @@ namespace App1.Control
                 });
             };
             dialog.ShowAsync();
-            
-        
+
+            SelectedScanRegion = new Rect(Border.Margin.Left * wRate, Border.Margin.Top * hRate, Border.Width * wRate, Border.Height * hRate);
             ImageScannerResolution imageScannerResolution = new ImageScannerResolution();
-            imageScannerResolution.DpiX = 100;
-            imageScannerResolution.DpiY = 100;
+            imageScannerResolution.DpiX = 300;
+            imageScannerResolution.DpiY = 300;
             myScanner.FlatbedConfiguration.DesiredResolution = imageScannerResolution;//不得超过自动获取的值大小,否则会参数错误
             myScanner.FlatbedConfiguration.SelectedScanRegion = SelectedScanRegion;//xy为起点,w.h为大小,和不能超过最大面积,并且不能小于最小面积
             if (myScanner.FlatbedConfiguration.IsFormatSupported(ImageScannerFormat))//跟设备有关系,本设备不支持输出pdf
@@ -252,43 +277,229 @@ namespace App1.Control
                 SelectedScanRegion.Height = myScanner.FlatbedConfiguration.MinScanArea.Height;
         }
 
-        private void Priew_PointerPressed(object sender, PointerRoutedEventArgs e)
+        #region 自定义大小方法
+
+        private TranslateTransform LTDragTranslation = new TranslateTransform();
+        private TranslateTransform RTDragTranslation = new TranslateTransform();
+        private TranslateTransform LBDragTranslation = new TranslateTransform();
+        private TranslateTransform RBDragTranslation = new TranslateTransform();
+        private double MinWidth
         {
-            start = e.GetCurrentPoint((UIElement)sender);
-            var t = LT.TransformToVisual((UIElement)LT.Parent);
-            Point screenCoords = t.TransformPoint(new Point(0, 0));
-            //between 0 and MaximumScanArea.Width - 1
-            SelectedScanRegion.X= start.Position.X / (sender as Image).ActualWidth * myScanner.FlatbedConfiguration.MaxScanArea.Width;
-            SelectedScanRegion.Y = start.Position.Y / (sender as Image).ActualHeight * myScanner.FlatbedConfiguration.MaxScanArea.Height;
+            get
+            {
+                return myScanner.FlatbedConfiguration.MinScanArea.Width / myScanner.FlatbedConfiguration.MaxScanArea.Width * ImageBack.Width;
+            }
+        }
+        private double MinHeight
+        {
+            get
+            {
+                return myScanner.FlatbedConfiguration.MinScanArea.Height / myScanner.FlatbedConfiguration.MaxScanArea.Height * ImageBack.Height;
+            }
         }
 
-        private Point Point = new Point();
-        private TranslateTransform dragTranslation;
+        private void InitRectTransform()
+        {
+            LT.RenderTransform = LTDragTranslation;
+            LB.RenderTransform = LBDragTranslation;
+            RT.RenderTransform = RTDragTranslation;
+            RB.RenderTransform = RBDragTranslation;
+        }
+
+        private void ChangeRectSize(DependencyObject sender, DependencyProperty dp)
+        {
+            RB.Height = RB.Width = LB.Height = LB.Width = RT.Height = RT.Width = LT.Width = LT.Height = 10 / Scrol.ZoomFactor;
+        }
+
+        /// <summary>
+        /// 更新当前的选框大小
+        /// </summary>
+        private void UpdateBorder()
+        {
+            var lt= GetRectPoint(LT);
+            var lb = GetRectPoint(LB);
+            var rt = GetRectPoint(RT);
+            RectMargin.Left = lt.X;
+            RectMargin.Top = lt.Y;
+            RectWidth = rt.X - lt.X;
+            RectHeight = lb.Y - lt.Y;
+            Border.Margin = new Thickness(lt.X, lt.Y, 0, 0);
+            Border.Height = rectHeight;
+            Border.Width = rectWidth;
+        }
+
         private void Rectangle_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (dragTranslation == null)
+            var rect = sender as Rectangle;
+            switch (rect.Tag)
             {
-                dragTranslation = new TranslateTransform();
+                case "LT":
+                    LTRectMove(LTDragTranslation, LBDragTranslation, RTDragTranslation, e);
+                    break;
+                case "RT":
+                    RTRectMove(RTDragTranslation, RBDragTranslation, LTDragTranslation, e);
+                    break;
+                case "LB":
+                    LBRectMove(LBDragTranslation, LTDragTranslation, RBDragTranslation, e);
+                    break;
+                case "RB":
+                    RBRectMove(RBDragTranslation, RTDragTranslation, LBDragTranslation, e);
+                    break;
             }
-            LT.RenderTransform = dragTranslation;
-            dragTranslation.X += e.Delta.Translation.X;
-            dragTranslation.Y += e.Delta.Translation.Y;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="own">拖动的对象本身</param>
+        /// <param name="x">需要在x轴同步的对象</param>
+        /// <param name="y">需要在y轴同步的对象</param>
+        private void LTRectMove(TranslateTransform own, TranslateTransform x, TranslateTransform y, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (LTDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor >= 0 &&
+                (RTDragTranslation.X + ImageBack.Width - LTDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor >= MinWidth || e.Delta.Translation.X < 0))
+            {
+                MoveLT_X(own, e);
+                MoveLT_X(x, e);
+            }
+            if (LTDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor >= 0 &&
+                (LBDragTranslation.Y + ImageBack.Height - LTDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor >= MinHeight || e.Delta.Translation.Y < 0))
+            {
+                MoveLT_Y(own, e);
+                MoveLT_Y(y, e);
+            }
+            UpdateBorder();
+        }
+        private void LBRectMove(TranslateTransform own, TranslateTransform x, TranslateTransform y, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (LBDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor >= 0 &&
+                (RBDragTranslation.X + ImageBack.Width - LBDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor >= MinWidth || e.Delta.Translation.X < 0))
+            {
+                MoveLT_X(own, e);
+                MoveLT_X(x, e);
+            }
+            if (LBDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor <= 0 &&
+                 (LBDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor + ImageBack.Height - LTDragTranslation.Y >= MinHeight || e.Delta.Translation.Y > 0))
+            {
+                MoveLT_Y(own, e);
+                MoveLT_Y(y, e);
+            }
+            UpdateBorder();
+        }
+
+        private void RBRectMove(TranslateTransform own, TranslateTransform x, TranslateTransform y, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (RBDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor <= 0 &&
+                (RBDragTranslation.X + ImageBack.Width + e.Delta.Translation.X / Scrol.ZoomFactor - LBDragTranslation.X >= MinWidth || e.Delta.Translation.X > 0))
+            {
+                MoveLT_X(own, e);
+                MoveLT_X(x, e);
+            }
+            if (LBDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor <= 0 &&
+                (LBDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor + ImageBack.Height - LTDragTranslation.Y >= MinHeight || e.Delta.Translation.Y > 0))
+            {
+                MoveLT_Y(own, e);
+                MoveLT_Y(y, e);
+            }
+            UpdateBorder();
+        }
+
+        private void RTRectMove(TranslateTransform own, TranslateTransform x, TranslateTransform y, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (RTDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor <= 0 &&
+                (RTDragTranslation.X + ImageBack.Width + e.Delta.Translation.X / Scrol.ZoomFactor - LTDragTranslation.X >= MinWidth || e.Delta.Translation.X > 0))
+            {
+                MoveLT_X(own, e);
+                MoveLT_X(x, e);
+            }
+            if (RTDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor >= 0 &&
+               (RBDragTranslation.Y + ImageBack.Height - RTDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor >= MinHeight || e.Delta.Translation.Y < 0))
+            {
+                MoveLT_Y(own, e);
+                MoveLT_Y(y, e);
+            }
+            UpdateBorder();
+        }
+
+        /// <summary>
+        /// 判断当前rect是否可以X轴移动
+        /// </summary>
+        /// <param name="translateTransform"></param>
+        /// <param name="e"></param>
+        private bool IsCanMove_X(TranslateTransform translateTransform, TranslateTransform x, ManipulationDeltaRoutedEventArgs e)
+        {
+            //不能超过同侧按钮
+            if (Math.Abs(translateTransform.X + e.Delta.Translation.X / Scrol.ZoomFactor-x.X) >= MinWidth && translateTransform.X + e.Delta.Translation.X / Scrol.ZoomFactor <= ImageBack.Width)
+                return true;
+            return false;
+        }
+
+        /// <summary>
+        /// 判断当前rect是否可以Y轴移动
+        /// </summary>
+        /// <param name="translateTransform"></param>
+        /// <param name="e"></param>
+        private bool IsCanMove_Y(TranslateTransform translateTransform, ManipulationDeltaRoutedEventArgs e)
+        {
+            if ((translateTransform.Y + e.Delta.Translation.Y / Scrol.ZoomFactor) >= MinHeight && translateTransform.Y + e.Delta.Translation.Y / Scrol.ZoomFactor <= ImageBack.Height)
+                return true;
+            return false;
+        }
+
+        /// <summary>
+        /// X轴移动
+        /// </summary>
+        /// <param name="translateTransform"></param>
+        /// <param name="e"></param>
+        private void MoveLT_X(TranslateTransform translateTransform, ManipulationDeltaRoutedEventArgs e)
+        {
+            translateTransform.X += e.Delta.Translation.X / Scrol.ZoomFactor;
+        }
+
+        /// <summary>
+        /// Y轴移动
+        /// </summary>
+        /// <param name="translateTransform"></param>
+        /// <param name="e"></param>
+        private void MoveLT_Y(TranslateTransform translateTransform, ManipulationDeltaRoutedEventArgs e)
+        {
+            translateTransform.Y += e.Delta.Translation.Y / Scrol.ZoomFactor;
         }
 
         private void TestRect_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            LT.ManipulationMode ^= ManipulationModes.TranslateInertia;//ManipulationMode中的所有模式开关都在不同的位数中,可以通过数值直接的位操作进行开关
-            Point = e.Position;
+            var rect = sender as Rectangle;
+            rect.ManipulationMode ^= ManipulationModes.TranslateInertia;//ManipulationMode中的所有模式开关都在不同的位数中,可以通过数值直接的位操作进行开关
         }
 
+        /// <summary>
+        /// 坐标以左上角的相对位置为准
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        private Point GetRectPoint(Rectangle rect)
+        {
+            var t = rect.TransformToVisual((UIElement)rect.Parent);
+            Point screenCoords = t.TransformPoint(new Point(0, 0));
+            return screenCoords;
+        }
+        #endregion
+
+        private void Priew_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            //start = e.GetCurrentPoint((UIElement)sender);
+            ////between 0 and MaximumScanArea.Width - 1
+            //SelectedScanRegion.X = start.Position.X / (sender as Image).ActualWidth * myScanner.FlatbedConfiguration.MaxScanArea.Width;
+            //SelectedScanRegion.Y = start.Position.Y / (sender as Image).ActualHeight * myScanner.FlatbedConfiguration.MaxScanArea.Height;
+        }
 
         private void Priew_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            end = e.GetCurrentPoint((UIElement)sender);
-            //between MinimumScanArea.Width and(MaximumScanArea.Width – SelectedScanRegion.X)
-            SelectedScanRegion.Width = Math.Abs(end.Position.X - start.Position.X) / (sender as Image).ActualWidth * myScanner.FlatbedConfiguration.MaxScanArea.Width;
-            SelectedScanRegion.Height = Math.Abs(end.Position.Y - start.Position.Y) / (sender as Image).ActualHeight * myScanner.FlatbedConfiguration.MaxScanArea.Height;
-            CheckMinScanArea();
+            //end = e.GetCurrentPoint((UIElement)sender);
+            ////between MinimumScanArea.Width and(MaximumScanArea.Width – SelectedScanRegion.X)
+            //SelectedScanRegion.Width = Math.Abs(end.Position.X - start.Position.X) / (sender as Image).ActualWidth * myScanner.FlatbedConfiguration.MaxScanArea.Width;
+            //SelectedScanRegion.Height = Math.Abs(end.Position.Y - start.Position.Y) / (sender as Image).ActualHeight * myScanner.FlatbedConfiguration.MaxScanArea.Height;
+            //CheckMinScanArea();
         }
     }
 }
