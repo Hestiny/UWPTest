@@ -341,7 +341,6 @@ namespace App1.Control
             RectMargin.Top = lt.Y;
             RectWidth = rt.X - lt.X;
             RectHeight = lb.Y - lt.Y;
-            //Border.Margin = new Thickness(lt.X, lt.Y, 0, 0);
             Border.Height = rectHeight;
             Border.Width = rectWidth;
         }
@@ -448,7 +447,6 @@ namespace App1.Control
             {
                 MoveLT_Y(own, e);
                 MoveLT_Y(y, e);
-                MoveBorder_Y(e.Delta.Translation.Y);
             }
             UpdateBorder();
         }
@@ -483,6 +481,7 @@ namespace App1.Control
             {
                 MoveLT_Y(own, e);
                 MoveLT_Y(y, e);
+                MoveBorder_Y(e.Delta.Translation.Y);
             }
             UpdateBorder();
         }
