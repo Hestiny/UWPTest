@@ -52,7 +52,7 @@
 
         </StackPanel>
         <Grid Background="DarkGray"  Grid.Column="1">
-            <ScrollViewer x:Name="Scrol"  ZoomMode="Enabled" HorizontalScrollBarVisibility="Visible">
+            <ScrollViewer x:Name="Scrol"  ZoomMode="Enabled" HorizontalScrollBarVisibility="Auto">
                 <Grid x:Name="ImageBack" Visibility="Collapsed" Background="Red" >
                     <Image x:Name="Priew" PointerPressed="Priew_PointerPressed" PointerReleased="Priew_PointerReleased"/>
                     <Rectangle x:Name="LT" Tag="LT" Fill="Red" Height="10" Width="10" VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -72,8 +72,9 @@
                            ManipulationStarted="TestRect_ManipulationStarted"  
                            ManipulationDelta="Rectangle_ManipulationDelta"/>
                     <Rectangle x:Name="Border" Stroke="DodgerBlue" StrokeThickness="4" 
-                              
+                              ManipulationMode="All"  Fill="Transparent"
                                StrokeDashArray="4 2" 
+                               ManipulationDelta="Border_ManipulationDelta"
                                VerticalAlignment="Top" HorizontalAlignment="Left"
                                />
                 </Grid>

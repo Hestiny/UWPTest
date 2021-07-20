@@ -200,12 +200,17 @@ namespace App1.Control
             myScanner = await ImageScanner.FromIdAsync(device.Id);
         }
 
+        private async void TextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            await OpenFolder(null, null);
+        }
+
         /// <summary>
         /// 选择导出文件夹
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void TextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        private async Task OpenFolder(object sender, TappedRoutedEventArgs e)
         {
             var folderPicker = new Windows.Storage.Pickers.FolderPicker();
             folderPicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
@@ -236,7 +241,7 @@ namespace App1.Control
         private async void Button_Click_2(object sender, RoutedEventArgs e)
         {
             if (storageFolder == null)
-                TextBlock_Tapped(null, null);
+                await OpenFolder(null, null);
             
             var cancellationToken = new CancellationTokenSource();
           
@@ -254,7 +259,12 @@ namespace App1.Control
             dialog.ShowAsync();
             try
             {
-                SelectedScanRegion = new Rect(Border.Margin.Left * wRate, Border.Margin.Top * hRate, Border.Width * wRate, Border.Height * hRate);
+                var borderPoint = GetRectPoint(Border);
+                SelectedScanRegion = new Rect(borderPoint.X * wRate,
+                    borderPoint.Y * hRate, 
+                    Border.Width * wRate>myScanner.FlatbedConfiguration.MinScanArea.Width? Border.Width * wRate : myScanner.FlatbedConfiguration.MinScanArea.Width, 
+                    Border.Height * hRate>myScanner.FlatbedConfiguration.MinScanArea.Height? Border.Height * hRate: myScanner.FlatbedConfiguration.MinScanArea.Height);
+               
                 ImageScannerResolution imageScannerResolution = new ImageScannerResolution();
                 imageScannerResolution.DpiX = 300;
                 imageScannerResolution.DpiY = 300;
@@ -275,8 +285,6 @@ namespace App1.Control
             dialog.Hide();
         }
 
-        private PointerPoint start, end;
-
         private void CheckMinScanArea()
         {
             if (SelectedScanRegion.Width < myScanner.FlatbedConfiguration.MinScanArea.Width)
@@ -285,12 +293,13 @@ namespace App1.Control
                 SelectedScanRegion.Height = myScanner.FlatbedConfiguration.MinScanArea.Height;
         }
 
-        #region 自定义大小方法
+        #region 自定义大小框选UI事件方法
 
         private TranslateTransform LTDragTranslation = new TranslateTransform();
         private TranslateTransform RTDragTranslation = new TranslateTransform();
         private TranslateTransform LBDragTranslation = new TranslateTransform();
         private TranslateTransform RBDragTranslation = new TranslateTransform();
+        private TranslateTransform borderTransform = new TranslateTransform();
         private double MinWidth
         {
             get
@@ -312,6 +321,7 @@ namespace App1.Control
             LB.RenderTransform = LBDragTranslation;
             RT.RenderTransform = RTDragTranslation;
             RB.RenderTransform = RBDragTranslation;
+            Border.RenderTransform = borderTransform;
         }
 
         private void ChangeRectSize(DependencyObject sender, DependencyProperty dp)
@@ -331,7 +341,7 @@ namespace App1.Control
             RectMargin.Top = lt.Y;
             RectWidth = rt.X - lt.X;
             RectHeight = lb.Y - lt.Y;
-            Border.Margin = new Thickness(lt.X, lt.Y, 0, 0);
+            //Border.Margin = new Thickness(lt.X, lt.Y, 0, 0);
             Border.Height = rectHeight;
             Border.Width = rectWidth;
         }
@@ -356,6 +366,49 @@ namespace App1.Control
             }
         }
 
+        private void Border_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            double x, y;
+            x = e.Delta.Translation.X;
+            y = e.Delta.Translation.Y;
+            if (LTDragTranslation.X + e.Delta.Translation.X < 0)
+            {
+                x = 0 - LTDragTranslation.X;
+            }
+            else if (RTDragTranslation.X + e.Delta.Translation.X > 0)
+            {
+                x = 0 - RTDragTranslation.X;
+            }
+            if(LBDragTranslation.Y + e.Delta.Translation.Y > 0)
+            {
+                y = 0 - LBDragTranslation.Y;
+            }
+           else if(LTDragTranslation.Y + e.Delta.Translation.Y < 0)
+            {
+                y = 0 - LTDragTranslation.Y;
+            }
+
+            borderTransform.X += x;
+            borderTransform.Y += y;
+            LTDragTranslation.X += x;
+            LTDragTranslation.Y += y;
+            LBDragTranslation.X += x;
+            LBDragTranslation.Y += y;
+            RTDragTranslation.X += x;
+            RTDragTranslation.Y += y;
+            RBDragTranslation.X += x;
+            RBDragTranslation.Y += y;
+        }
+
+        private void MoveBorder_X(double x)
+        {
+            borderTransform.X += x;
+        }
+        private void MoveBorder_Y(double y)
+        {
+            borderTransform.Y += y;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -369,15 +422,18 @@ namespace App1.Control
             {
                 MoveLT_X(own, e);
                 MoveLT_X(x, e);
+                MoveBorder_X(e.Delta.Translation.X);
             }
             if (LTDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor >= 0 &&
                 (LBDragTranslation.Y + ImageBack.Height - LTDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor >= MinHeight || e.Delta.Translation.Y < 0))
             {
                 MoveLT_Y(own, e);
                 MoveLT_Y(y, e);
+                MoveBorder_Y(e.Delta.Translation.Y);
             }
             UpdateBorder();
         }
+
         private void LBRectMove(TranslateTransform own, TranslateTransform x, TranslateTransform y, ManipulationDeltaRoutedEventArgs e)
         {
             if (LBDragTranslation.X + e.Delta.Translation.X / Scrol.ZoomFactor >= 0 &&
@@ -385,12 +441,14 @@ namespace App1.Control
             {
                 MoveLT_X(own, e);
                 MoveLT_X(x, e);
+                MoveBorder_X(e.Delta.Translation.X);
             }
             if (LBDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor <= 0 &&
                  (LBDragTranslation.Y + e.Delta.Translation.Y / Scrol.ZoomFactor + ImageBack.Height - LTDragTranslation.Y >= MinHeight || e.Delta.Translation.Y > 0))
             {
                 MoveLT_Y(own, e);
                 MoveLT_Y(y, e);
+                MoveBorder_Y(e.Delta.Translation.Y);
             }
             UpdateBorder();
         }
@@ -456,7 +514,7 @@ namespace App1.Control
         }
 
         /// <summary>
-        /// 坐标以左上角的相对位置为准
+        /// 坐标以左上角的相对位置为准,获取当前控件相对与父控件的位置
         /// </summary>
         /// <param name="rect"></param>
         /// <returns></returns>
