@@ -890,7 +890,9 @@
                      Width="300" Height="53"  IsSpellCheckEnabled="False" 
                       Foreground="BlueViolet" Background="Transparent" BorderThickness="0">
                 </RichEditBox>
-                <TextBlock  Name="rt" Text="AJSBFKAHJsdfsdfsdfsdfsdfsdfssdfsdfsdfsdfsdfsfsdfsdsdfdSBF" HorizontalAlignment="Left"  Width="300" Height="53" TextWrapping="Wrap" Margin="0 0 0 300"/>
+                <TextBlock  Name="rt" Text="AJSBFKAHJsdfsdfsdfsdfsdfsdfssdfsdfsdfsdfsdfsfsdfsdsdfdSBF" 
+                            HorizontalAlignment="Left"  Width="300" 
+                            Height="20" TextWrapping="Wrap" Margin="0 0 0 300"/>
                 <RichTextBlock HorizontalAlignment="Left" Width="300" Height="53" Margin=" 0 0 0 80" >
                     <Paragraph >
                         Proin ac metus at quam luctus ultricies.rvrvdrvdrvdrvdv
@@ -957,7 +959,25 @@
             </Grid>
         </Grid>
         <Grid Grid.Row="1" x:Name="ScannerTest" Visibility="Collapsed">
-            <control:ScannerTest/>
+            <!--<control:ScannerTest/>-->
+        </Grid>
+        <Grid  Grid.RowSpan="2" Visibility="Collapsed" >
+            <d:NavigationView x:Name="nvSample5" 
+                                            Grid.Row="1" 
+                              IsSettingsVisible="False"
+                              IsBackButtonVisible="Collapsed"
+                                            Header="This is Header Text" 
+                                            PaneDisplayMode="Auto" 
+                                            IsTabStop="False" 
+                                            SelectionChanged="NavigationView_SelectionChanged5" >
+                <d:NavigationView.MenuItems>
+                    <d:NavigationViewItem Content="Menu Item1" Tag="SamplePage1" Icon="Play" />
+                    <d:NavigationViewItem Content="Menu Item2" Tag="SamplePage2" Icon="Save" />
+                    <d:NavigationViewItem Content="Menu Item3" Tag="SamplePage3" Icon="Refresh" />
+                    <d:NavigationViewItem Content="Menu Item4" Tag="SamplePage4" Icon="Download" />
+                </d:NavigationView.MenuItems>
+                <Frame Margin="0,0,0,0" x:Name="contentFrame5" />
+            </d:NavigationView>
         </Grid>
     </Grid>
 </Page>
