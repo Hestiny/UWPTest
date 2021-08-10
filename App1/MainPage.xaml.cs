@@ -84,7 +84,7 @@ namespace App1
             UpdateTitleBarLayout(coreTitleBar);
 
             // Set XAML element as a draggable region.
-            Window.Current.SetTitleBar(AppTitleBar);
+            //Window.Current.SetTitleBar(AppTitleBar);
 
             // Register a handler for when the size of the overlaid caption control changes.
             // For example, when the app moves to a screen with a different DPI.
@@ -403,6 +403,23 @@ namespace App1
         {
             CloseAllPage();
             ScannerTest.Visibility = Visibility.Visible;
+        }
+
+        private void NavigationView_SelectionChanged5(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.IsSettingsSelected)
+            {
+                 contentFrame5.Navigate(typeof(FoldersPage));
+            }
+            else
+            {
+                NavigationViewItem selectedItem = (NavigationViewItem)args.SelectedItem;
+                string selectedItemTag = ((string)selectedItem.Tag);
+                sender.Header = selectedItemTag;
+                string pageName = "App1.Control." + selectedItemTag;
+                Type pageType = Type.GetType(pageName); 
+                contentFrame5.Navigate(pageType);
+            }
         }
     }
 }

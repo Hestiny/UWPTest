@@ -4,7 +4,9 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
+  xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
+  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+  IgnorableNamespaces="uap mp uap4 uap2">
 
   <Identity
     Name="216dc5f3-e594-43f3-a276-2f44a198a641"
@@ -45,5 +47,10 @@
 
   <Capabilities>
     <Capability Name="internetClient" />
+    <uap:Capability Name="picturesLibrary"/>
+    <uap:Capability Name="videosLibrary"/>
+    <uap:Capability Name="musicLibrary"/>
+    <uap4:Capability Name="userDataTasks"/>
+    <uap2:Capability Name="spatialPerception"/>
   </Capabilities>
 </Package>
