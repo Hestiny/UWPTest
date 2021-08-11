@@ -119,6 +119,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Collections\PinnedFolder.cs" />
     <Compile Include="Control\FoldersPage.xaml.cs">
       <DependentUpon>FoldersPage.xaml</DependentUpon>
     </Compile>
@@ -133,6 +134,8 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\ChangeThemeClass.cs" />
+    <Compile Include="ViewModel\Common\ViewModelBase.cs" />
+    <Compile Include="ViewModel\FoldersPageViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

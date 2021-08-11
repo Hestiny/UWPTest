@@ -1,4 +1,6 @@
-﻿using System;
+﻿using App1.Collections;
+using App1.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -8,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -22,8 +25,9 @@ namespace App1.Control
 {
     public sealed partial class FoldersPage : Page
     {
-        public  List<IStorageItem> Items;
+        public  List<object> Items;
         public  ObservableCollection<object> Breadcrumbs =new ObservableCollection<object>();
+        private PinnedFolderLocalSetting pinnedFolderLocalSetting =new PinnedFolderLocalSetting();
 
         public readonly struct Crumb
         {
@@ -44,18 +48,21 @@ namespace App1.Control
         }
 
 
-        private void InitializeView()
+        private async void InitializeView()
         {
             // Start with Pictures and Music libraries.
-            Items = new List<IStorageItem>();
-            Items.Add(KnownFolders.PicturesLibrary);
-            Items.Add(KnownFolders.MusicLibrary);
-            FolderView.ItemsSource = Items;
+            Items = new List<object>();
+            Items.Add(new PinnedFolder());
+            List<IStorageItem> storageItems = await pinnedFolderLocalSetting.GetPinnedFolder();
+            if (storageItems != null)
+                Items.AddRange(storageItems);
+            FolderView.ItemsSource = Items; 
 
             Breadcrumbs.Clear();
             Breadcrumbs.Add(new Crumb("Home", null));
         }
 
+        #region ====界面事件====
         private async void FolderBreadcrumbBar_ItemClicked(Microsoft.UI.Xaml.Controls.BreadcrumbBar sender, Microsoft.UI.Xaml.Controls.BreadcrumbBarItemClickedEventArgs args)
         {
             // Don't process last index (current location)
@@ -82,12 +89,6 @@ namespace App1.Control
             }
         }
 
-        private async Task GetFolderItems(StorageFolder folder)
-        {
-            IReadOnlyList<IStorageItem> itemsList = await folder.GetItemsAsync();
-            FolderView.ItemsSource = itemsList;
-        }
-
         private async void FolderListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is StorageFolder)
@@ -96,6 +97,72 @@ namespace App1.Control
                 await GetFolderItems(folder);
                 Breadcrumbs.Add(new Crumb(folder.DisplayName, folder));
             }
+            else
+            {
+                OpenFolderPicker();
+            }
         }
+        #endregion
+
+        /// <summary>
+        /// 获取新的文件路径下的所有文件
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        private async Task GetFolderItems(StorageFolder folder)
+        {
+            IReadOnlyList<IStorageItem> itemsList = await folder.GetItemsAsync();
+            FolderView.ItemsSource = itemsList;
+        }
+
+        private bool _FilePickerOpen = false;
+
+        /// <summary>
+        /// 打开文件拾取器
+        /// </summary>
+        private async void OpenFolderPicker()
+        {
+            if (_FilePickerOpen)
+            {
+                return;
+            }
+            FolderPicker folderPicker = new FolderPicker();
+            folderPicker.ViewMode = PickerViewMode.List;
+            StorageFolder folder = null;
+            _FilePickerOpen = true;
+            folderPicker.FileTypeFilter.Add("*");
+            try
+            {
+                // apparently, this sometimes throws a System.Exception "Element not found" for no apparent reason. We want to catch that.
+                folder = await folderPicker.PickSingleFolderAsync();
+            }
+            catch (Exception e)
+            {
+            }
+            finally
+            {
+                _FilePickerOpen = false;
+            }
+
+            AddPinFolder(folder);
+        }
+
+        /// <summary>
+        /// 将文件夹加入到固定文件列表
+        /// </summary>
+        /// <param name="folder"></param>
+        private void AddPinFolder(StorageFolder folder)
+        {
+            if (folder != null)
+            {
+                Items.Add(folder);
+                List<object> list= new List<object>();
+                list.AddRange(Items);
+                FolderView.ItemsSource = list;
+                pinnedFolderLocalSetting.AddPinnedFolder(folder);
+            }
+        }
+
+
     }
 }
