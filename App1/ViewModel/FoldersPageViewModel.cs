@@ -37,6 +37,7 @@ namespace App1.ViewModel
             {
                 Container = new ApplicationDataCompositeValue();
                 Container[PINNED_FOLDER_COUNT] = 0;
+                localSettings.Values[ContainerName] = Container;
             }
         }
 
@@ -87,7 +88,7 @@ namespace App1.ViewModel
             List<IStorageItem> items = new List<IStorageItem>();
             try
             {
-                for (int index = 0; index < PinedFolderCount; ++index)
+                for (int index = 0; index <=PinedFolderCount; ++index)
                 {
                     string settingsName = PINNED_FOLDER_NAME + index;
                     if (localSettings.Values.ContainsKey(settingsName))
