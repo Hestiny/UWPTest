@@ -51,11 +51,15 @@ namespace App1.Control
         private async void InitializeView()
         {
             // Start with Pictures and Music libraries.
+            PinnedFolder pinnedFolder = new PinnedFolder();
+            pinnedFolder.InitFileAttribute(null);
             Items = new List<object>();
-            Items.Add(new PinnedFolder());
+            Items.Add(pinnedFolder);
+
             List<IStorageItem> storageItems = await pinnedFolderLocalSetting.GetPinnedFolder();
-            if (storageItems != null)
-                Items.AddRange(storageItems);
+            var Flodertems = GetPinnedFolderList(storageItems);
+            if (Flodertems != null)
+                Items.AddRange(Flodertems);
             FolderView.ItemsSource = Items; 
 
             Breadcrumbs.Clear();
@@ -91,9 +95,14 @@ namespace App1.Control
 
         private async void FolderListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is StorageFolder)
+            PinnedFolder pinnedFolder = e.ClickedItem as PinnedFolder;
+           
+            if (pinnedFolder.File != null )
             {
-                StorageFolder folder = e.ClickedItem as StorageFolder;
+                if (pinnedFolder.IsFile)
+                    return;
+
+                StorageFolder folder = pinnedFolder.File as StorageFolder;
                 await GetFolderItems(folder);
                 Breadcrumbs.Add(new Crumb(folder.DisplayName, folder));
             }
@@ -102,7 +111,23 @@ namespace App1.Control
                 OpenFolderPicker();
             }
         }
+
         #endregion
+
+        private List<object> GetPinnedFolderList(List<IStorageItem> storageItems)
+        {
+            if (storageItems == null)
+                return null;
+
+            List<object> list = new List<object>();
+            foreach(var item in storageItems)
+            {
+                PinnedFolder pinnedFolder = new PinnedFolder();
+                pinnedFolder.InitFileAttribute(item);
+                list.Add(pinnedFolder);
+            }
+            return list;
+        }
 
         /// <summary>
         /// 获取新的文件路径下的所有文件
@@ -112,7 +137,8 @@ namespace App1.Control
         private async Task GetFolderItems(StorageFolder folder)
         {
             IReadOnlyList<IStorageItem> itemsList = await folder.GetItemsAsync();
-            FolderView.ItemsSource = itemsList;
+            var pinnedList = GetPinnedFolderList(itemsList.ToList());
+            FolderView.ItemsSource = pinnedList;
         }
 
         private bool _FilePickerOpen = false;

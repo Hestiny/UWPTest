@@ -36,7 +36,14 @@
             <GridView x:Name="FolderView" IsItemClickEnabled="True" ItemClick="FolderListView_ItemClick" BorderBrush="AliceBlue">
                 <GridView.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Name}"/>
+                        <Grid Height="150">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="{Binding ThumbImage}"/>
+                            <TextBlock Text="{Binding Name}"/>
+                        </Grid>
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
