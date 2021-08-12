@@ -8,7 +8,8 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:storage="using:Windows.Storage"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    Loaded="Page_Loaded">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -25,7 +26,7 @@
                     </DataTemplate>
             </muxc:BreadcrumbBar.ItemTemplate>
         </muxc:BreadcrumbBar>-->
-            <StackPanel Height="40" HorizontalAlignment="Right">
+            <StackPanel Height="40" HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button x:Name="delete" Background="Red" Content="del" Width="60" Click="delete_Click"/>
                 <Button x:Name="SelectMode" Background="LightSkyBlue" Content="SelectMode" Click="SelectMode_Click" Margin="5 0"/>
                 <Button HorizontalAlignment="Right" Content="List" Background="DodgerBlue"  Width="60" Click="Button_Click"/>
@@ -39,7 +40,7 @@
         </Grid>
         <Grid Grid.Row="1">
             <GridView x:Name="FolderView" IsItemClickEnabled="True" ItemClick="FolderListView_ItemClick" ItemsSource="{x:Bind Items}"
-                      BorderBrush="AliceBlue" SelectionMode="{x:Bind SelectionMode}">
+                      BorderBrush="AliceBlue" SelectionMode="{Binding SelectionMode }">
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <Grid Height="90">

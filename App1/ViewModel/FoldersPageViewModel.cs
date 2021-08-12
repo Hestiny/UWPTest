@@ -6,12 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
+using Windows.UI.Xaml.Controls;
 
 namespace App1.ViewModel
 {
     class FoldersPageViewModel: ViewModelBase
     {
-
+        private ListViewSelectionMode _SelectionMode = ListViewSelectionMode.None;
+        public ListViewSelectionMode SelectionMode
+        {
+            get { return _SelectionMode; }
+            set { Set(ref _SelectionMode, value); }
+        }
     }
 
     class PinnedFolderLocalSetting

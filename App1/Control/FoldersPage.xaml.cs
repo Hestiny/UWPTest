@@ -28,6 +28,7 @@ namespace App1.Control
         public ObservableCollection<object> Items =new ObservableCollection<object>();
         public  ObservableCollection<object> Breadcrumbs =new ObservableCollection<object>();
         private PinnedFolderLocalSetting pinnedFolderLocalSetting =new PinnedFolderLocalSetting();
+        private FoldersPageViewModel foldersPageViewModel = new FoldersPageViewModel();
 
         public readonly struct Crumb
         {
@@ -39,13 +40,6 @@ namespace App1.Control
             public string Label { get; }
             public object Data { get; }
             public override string ToString() => Label;
-        }
-
-        private ListViewSelectionMode _SelectionMode = ListViewSelectionMode.None;
-        public ListViewSelectionMode SelectionMode
-        {
-            get { return _SelectionMode; }
-            set { _SelectionMode = value; }
         }
 
         public FoldersPage()
@@ -100,6 +94,9 @@ namespace App1.Control
 
         private async void FolderListView_ItemClick(object sender, ItemClickEventArgs e)
         {
+            if (foldersPageViewModel.SelectionMode == ListViewSelectionMode.Multiple)
+                return;
+
             PinnedFolder pinnedFolder = e.ClickedItem as PinnedFolder;
            
             if (pinnedFolder.File != null )
@@ -152,10 +149,22 @@ namespace App1.Control
 
         private void SelectMode_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectionMode == ListViewSelectionMode.None)
-                SelectionMode = ListViewSelectionMode.Multiple;
+            if (foldersPageViewModel.SelectionMode == ListViewSelectionMode.None)
+            {
+                foldersPageViewModel.SelectionMode = ListViewSelectionMode.Multiple;
+                //FolderView.SelectionMode = ListViewSelectionMode.Multiple;
+            }
             else
-                SelectionMode = ListViewSelectionMode.None;
+            {
+                foldersPageViewModel.SelectionMode = ListViewSelectionMode.None;
+                //FolderView.SelectionMode = ListViewSelectionMode.None;
+            }
+              
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = foldersPageViewModel;
         }
 
         #endregion
