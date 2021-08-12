@@ -15,8 +15,8 @@
             <RowDefinition Height="auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <StackPanel>
-             <muxc:BreadcrumbBar x:Name="BreadcrumbBar" ItemsSource="{x:Bind Breadcrumbs}" >
+        <Grid>
+             <!--<muxc:BreadcrumbBar x:Name="BreadcrumbBar" ItemsSource="{x:Bind Breadcrumbs}" >
             <muxc:BreadcrumbBar.ItemTemplate>
                 <DataTemplate >
                         <Grid Background="red">
@@ -24,19 +24,25 @@
                         </Grid>
                     </DataTemplate>
             </muxc:BreadcrumbBar.ItemTemplate>
-        </muxc:BreadcrumbBar>
-
+        </muxc:BreadcrumbBar>-->
+            <StackPanel Height="40" HorizontalAlignment="Right">
+                <Button x:Name="delete" Background="Red" Content="del" Width="60" Click="delete_Click"/>
+                <Button x:Name="SelectMode" Background="LightSkyBlue" Content="SelectMode" Click="SelectMode_Click" Margin="5 0"/>
+                <Button HorizontalAlignment="Right" Content="List" Background="DodgerBlue"  Width="60" Click="Button_Click"/>
+            </StackPanel>
+         
             <muxc:BreadcrumbBar x:Name="FolderBreadcrumbBar"
                              ItemsSource="{x:Bind Breadcrumbs}"
                              ItemClicked="FolderBreadcrumbBar_ItemClicked">
             </muxc:BreadcrumbBar>
 
-        </StackPanel>
+        </Grid>
         <Grid Grid.Row="1">
-            <GridView x:Name="FolderView" IsItemClickEnabled="True" ItemClick="FolderListView_ItemClick" BorderBrush="AliceBlue">
+            <GridView x:Name="FolderView" IsItemClickEnabled="True" ItemClick="FolderListView_ItemClick" ItemsSource="{x:Bind Items}"
+                      BorderBrush="AliceBlue" SelectionMode="{x:Bind SelectionMode}">
                 <GridView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Height="150">
+                        <Grid Height="90">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="60"/>
@@ -46,6 +52,11 @@
                         </Grid>
                     </DataTemplate>
                 </GridView.ItemTemplate>
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Name="itemsWrapGrid" Orientation="Horizontal" Loaded="itemsWrapGrid_Loaded"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
             </GridView>
             
         </Grid>

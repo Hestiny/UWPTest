@@ -25,7 +25,7 @@ namespace App1.Control
 {
     public sealed partial class FoldersPage : Page
     {
-        public  List<object> Items;
+        public ObservableCollection<object> Items =new ObservableCollection<object>();
         public  ObservableCollection<object> Breadcrumbs =new ObservableCollection<object>();
         private PinnedFolderLocalSetting pinnedFolderLocalSetting =new PinnedFolderLocalSetting();
 
@@ -41,6 +41,13 @@ namespace App1.Control
             public override string ToString() => Label;
         }
 
+        private ListViewSelectionMode _SelectionMode = ListViewSelectionMode.None;
+        public ListViewSelectionMode SelectionMode
+        {
+            get { return _SelectionMode; }
+            set { _SelectionMode = value; }
+        }
+
         public FoldersPage()
         {
             this.InitializeComponent();
@@ -53,14 +60,12 @@ namespace App1.Control
             // Start with Pictures and Music libraries.
             PinnedFolder pinnedFolder = new PinnedFolder();
             pinnedFolder.InitFileAttribute(null);
-            Items = new List<object>();
+            Items.Clear();
             Items.Add(pinnedFolder);
 
             List<IStorageItem> storageItems = await pinnedFolderLocalSetting.GetPinnedFolder();
             var Flodertems = GetPinnedFolderList(storageItems);
-            if (Flodertems != null)
-                Items.AddRange(Flodertems);
-            FolderView.ItemsSource = Items; 
+            UpdateItems(Flodertems);
 
             Breadcrumbs.Clear();
             Breadcrumbs.Add(new Crumb("Home", null));
@@ -112,6 +117,47 @@ namespace App1.Control
             }
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (itemsWrapGrid.MaximumRowsOrColumns == -1)
+                itemsWrapGrid.MaximumRowsOrColumns = 1;
+            else
+                itemsWrapGrid.MaximumRowsOrColumns = -1;
+        }
+
+        private ItemsWrapGrid itemsWrapGrid;
+
+        private void itemsWrapGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            itemsWrapGrid = sender as ItemsWrapGrid;
+            itemsWrapGrid.MaximumRowsOrColumns = -1;
+
+        }
+
+        private void delete_Click(object sender, RoutedEventArgs e)
+        {
+            if (FolderView.SelectedItems.Count == 0 || Breadcrumbs.Count != 1)
+                return;
+            foreach (PinnedFolder item in FolderView.SelectedItems)
+            {
+                int index = Items.IndexOf(item);
+                if (index != -1)
+                {
+                    pinnedFolderLocalSetting.DeletePinnedFolder(index);
+                    Items.Remove(item);
+                }
+            }
+
+        }
+
+        private void SelectMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectionMode == ListViewSelectionMode.None)
+                SelectionMode = ListViewSelectionMode.Multiple;
+            else
+                SelectionMode = ListViewSelectionMode.None;
+        }
+
         #endregion
 
         private List<object> GetPinnedFolderList(List<IStorageItem> storageItems)
@@ -129,6 +175,16 @@ namespace App1.Control
             return list;
         }
 
+        private void UpdateItems(List<object> list)
+        {
+            if (list == null)
+                return;
+            foreach(var item in list)
+            {
+                Items.Add(item);
+            }
+        }
+
         /// <summary>
         /// 获取新的文件路径下的所有文件
         /// </summary>
@@ -138,7 +194,8 @@ namespace App1.Control
         {
             IReadOnlyList<IStorageItem> itemsList = await folder.GetItemsAsync();
             var pinnedList = GetPinnedFolderList(itemsList.ToList());
-            FolderView.ItemsSource = pinnedList;
+            Items.Clear();
+            UpdateItems(pinnedList);
         }
 
         private bool _FilePickerOpen = false;
@@ -182,9 +239,6 @@ namespace App1.Control
             if (folder != null)
             {
                 Items.Add(folder);
-                List<object> list= new List<object>();
-                list.AddRange(Items);
-                FolderView.ItemsSource = list;
                 pinnedFolderLocalSetting.AddPinnedFolder(folder);
             }
         }
