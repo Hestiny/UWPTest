@@ -256,7 +256,7 @@ namespace App1.Control
                     dialog.Hide();
                 });
             };
-            dialog.ShowAsync();
+            await dialog.ShowAsync();
             try
             {
                 var borderPoint = GetRectPoint(Border);
