@@ -123,6 +123,7 @@ namespace App1.ViewModel
         public void DeletePinnedFolder(int deleteIndex)
         {
             --PinedFolderCount;
+            StorageApplicationPermissions.FutureAccessList.Remove(GetPinnerFolderToken(deleteIndex));
             for (int index = deleteIndex; index < PinedFolderCount; ++index)
             {
                 SetPinnedFolderToken(GetPinnerFolderToken(index + 1), index);

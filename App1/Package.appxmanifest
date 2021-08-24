@@ -47,10 +47,5 @@
 
   <Capabilities>
     <Capability Name="internetClient" />
-    <uap:Capability Name="picturesLibrary"/>
-    <uap:Capability Name="videosLibrary"/>
-    <uap:Capability Name="musicLibrary"/>
-    <uap4:Capability Name="userDataTasks"/>
-    <uap2:Capability Name="spatialPerception"/>
   </Capabilities>
 </Package>

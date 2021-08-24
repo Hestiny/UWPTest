@@ -99,7 +99,7 @@ namespace App1.Control
 
             PinnedFolder pinnedFolder = e.ClickedItem as PinnedFolder;
            
-            if (pinnedFolder.File != null )
+            if (pinnedFolder !=null && pinnedFolder.File != null )
             {
                 if (pinnedFolder.IsFile)
                     return;
@@ -247,7 +247,9 @@ namespace App1.Control
         {
             if (folder != null)
             {
-                Items.Add(folder);
+                PinnedFolder pinnedFolder = new PinnedFolder();
+                pinnedFolder.InitFileAttribute(folder);
+                Items.Add(pinnedFolder);
                 pinnedFolderLocalSetting.AddPinnedFolder(folder);
             }
         }

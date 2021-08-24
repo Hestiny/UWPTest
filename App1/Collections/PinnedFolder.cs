@@ -27,7 +27,7 @@ namespace App1.Collections
             File = storageItem;
             if (IsFile)
             {
-                ThumbNavil = await (File as StorageFile).GetScaledImageAsThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.DocumentsView);
+                ThumbNavil = await (File as StorageFile).GetScaledImageAsThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.SingleItem);
                 InMemoryRandomAccessStream randomAccessStream = new InMemoryRandomAccessStream();
                 await RandomAccessStream.CopyAsync(ThumbNavil, randomAccessStream);
                 randomAccessStream.Seek(0); 

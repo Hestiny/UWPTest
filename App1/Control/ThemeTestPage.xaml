@@ -1,0 +1,24 @@
+﻿<Page
+    x:Class="App1.Control.ThemeTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App1.Control"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark" Source="ms-appx:///View/DarkThemeDictionary.xaml"/>
+                <ResourceDictionary x:Key="Light" Source="ms-appx:///View/LightThemeDictionary.xaml"/>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid  x:Name="ThemeTest" >
+        <Grid Background="{ThemeResource SystemBackgroundAltHighBrush}">
+            <ToggleSwitch HorizontalAlignment="Center"  Background="Red" Toggled="ToggleSwitch_OnToggled"></ToggleSwitch>
+            <TextBlock x:Name="ThemeText" Height="20"/>
+        </Grid>
+    </Grid>
+</Page>

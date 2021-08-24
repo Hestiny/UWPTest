@@ -26,7 +26,7 @@ using Windows.UI.Xaml.Shapes;
 
 namespace App1.Control
 {
-    public sealed partial class ScannerTest : UserControl
+    public sealed partial class ScannerTest : Page
     {
         public ScannerTest()
         {
