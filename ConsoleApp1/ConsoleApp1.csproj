@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspose.Words" Version="21.5.0" />
-    <PackageReference Include="SkiaSharp" Version="2.80.2" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
   </ItemGroup>
 
 </Project>
